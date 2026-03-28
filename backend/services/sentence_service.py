@@ -69,15 +69,18 @@ def generate_sentence(words: list[Word], source_language: str, previous_sentence
             f"- {s}" for s in previous_sentences
         )
     
+    sentence_structure = "[subject] + [verb] + [object] | e.g. The man drinks water."
+
     target_language = "english" if source_language == "greek" else "greek"
 
     prompt = f"""I want you to generate a sentence for a language quiz.
 Generate a short, simple {source_language} sentence using one or more of these vocabulary words. 
-The sentence should be 3-7 words long and use basic grammar. The subject selection: {subject_selection}
+The sentence should be up to 10 words long and use basic grammar and create a sentence with the structure {sentence_structure}
+The subject selection: {subject_selection}
 Select a verb ONLY from the vocabulary words provided.
 If you decide to use an object, select a noun ONLY from the vocabulary words provided and it should be {object_count}.
 You can use adjectives after the verb "to be", but select them ONLY from the vocabulary words provided.
-You can use personal pronouns (he, she, you, etc.), demonstrative pronouns (this, that, etc.), articles, prepositions (in, into, from, etc.), conjunctions, etc. 
+You can use personal pronouns (he, she, you, etc.), demonstrative pronouns (this, that, etc.), indefinite articles (a, an), prepositions (in, into, from, etc.), conjunctions. They would add variety to the sentences. 
 When I say use ONLY from the vocabulary words provided, I mean do not use a word that is not in the vocabulary.
 The sentences should make sense, not just random words brought together. {avoid_block}
 

@@ -16,7 +16,7 @@ export default function WordQuizPage() {
   }
 
   if (quiz.phase === 'result' && quiz.result) {
-    return <QuizResult result={quiz.result} onNext={quiz.next} />
+    return <QuizResult result={quiz.result} question={quiz.question?.prompt} onNext={quiz.next} />
   }
 
   if (quiz.phase === 'summary' && quiz.summary) {
