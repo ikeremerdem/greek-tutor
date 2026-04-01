@@ -13,17 +13,17 @@ _structures_path = settings.data_dir / "sentence_structures.csv"
 # List of English subject pronouns, singular and plural
 SUBJECTS = [
     "I",
-    "you",
+    "you (singular)",
     "he",
     "she",
     "it",
     "we",
-    "you (plural)"
+    "you (plural)",
     "they",
     "you (formal)",
     "in the form [article] + [noun]",
     "in the form [indefinite article] + [noun]",
-    "in the form [demonstrative] + [noun]",
+    "in the form [demonstrative] + [noun]"
 ]
 
 
