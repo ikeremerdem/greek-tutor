@@ -1,19 +1,25 @@
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 
-from models.stats import DashboardStats, DifficultWord, RecentSession, WeeklyActivity
+from models.stats import DashboardStats, DifficultWord, RecentSession, WeeklyActivity, WordStatusCounts
 from services import vocabulary_service
-from services.quiz_service import get_session_store
+from services.supabase_client import supabase
 
 
-def reset_stats() -> None:
-    store = get_session_store()
-    store._write_all([])
+def reset_stats(tutor_id: str) -> None:
+    supabase.table("quiz_sessions").delete().eq("tutor_id", tutor_id).execute()
 
 
-def get_dashboard() -> DashboardStats:
-    words = vocabulary_service.list_words()
-    sessions = get_session_store().read_all()
+def get_dashboard(tutor_id: str) -> DashboardStats:
+    words = vocabulary_service.list_words(tutor_id)
+
+    response = (
+        supabase.table("quiz_sessions")
+        .select("*")
+        .eq("tutor_id", tutor_id)
+        .execute()
+    )
+    sessions = response.data
 
     total_sessions = len(sessions)
     total_questions = sum(int(s.get("total_questions", 0)) for s in sessions)
@@ -21,7 +27,7 @@ def get_dashboard() -> DashboardStats:
     average_score = round(sum(scores) / len(scores), 1) if scores else 0
     best_score = max(scores) if scores else 0
 
-    recent = sorted(sessions, key=lambda s: s.get("ended_at", ""), reverse=True)[:10]
+    recent = sorted(sessions, key=lambda s: s.get("ended_at") or "", reverse=True)[:10]
     recent_sessions = [
         RecentSession(
             id=s["id"],
@@ -29,13 +35,10 @@ def get_dashboard() -> DashboardStats:
             score_percent=float(s["score_percent"]),
             total_questions=int(s["total_questions"]),
             correct_answers=int(s["correct_answers"]),
-            ended_at=s.get("ended_at", ""),
+            ended_at=s.get("ended_at") or "",
         )
         for s in recent
     ]
-
-    weekly_activity = _compute_weekly_activity(sessions)
-    difficult_words = _compute_difficult_words(words)
 
     return DashboardStats(
         total_words=len(words),
@@ -43,16 +46,23 @@ def get_dashboard() -> DashboardStats:
         total_questions=total_questions,
         average_score=average_score,
         best_score=best_score,
+        word_status=_compute_word_status(words),
         recent_sessions=recent_sessions,
-        weekly_activity=weekly_activity,
-        difficult_words=difficult_words,
+        weekly_activity=_compute_weekly_activity(sessions),
+        difficult_words=_compute_difficult_words(words),
     )
 
 
-def get_sessions_by_type(quiz_type: str) -> list[RecentSession]:
-    sessions = get_session_store().read_all()
-    filtered = [s for s in sessions if s.get("quiz_type") == quiz_type]
-    recent = sorted(filtered, key=lambda s: s.get("ended_at", ""), reverse=True)[:10]
+def get_sessions_by_type(tutor_id: str, quiz_type: str) -> list[RecentSession]:
+    response = (
+        supabase.table("quiz_sessions")
+        .select("*")
+        .eq("tutor_id", tutor_id)
+        .eq("quiz_type", quiz_type)
+        .order("ended_at", desc=True)
+        .limit(10)
+        .execute()
+    )
     return [
         RecentSession(
             id=s["id"],
@@ -60,10 +70,17 @@ def get_sessions_by_type(quiz_type: str) -> list[RecentSession]:
             score_percent=float(s["score_percent"]),
             total_questions=int(s["total_questions"]),
             correct_answers=int(s["correct_answers"]),
-            ended_at=s.get("ended_at", ""),
+            ended_at=s.get("ended_at") or "",
         )
-        for s in recent
+        for s in response.data
     ]
+
+
+def _compute_word_status(words) -> WordStatusCounts:
+    new = sum(1 for w in words if w.times_asked == 0)
+    good = sum(1 for w in words if w.times_asked > 0 and w.times_correct / w.times_asked >= 0.8)
+    struggling = sum(1 for w in words if w.times_asked > 0 and w.times_correct / w.times_asked < 0.8)
+    return WordStatusCounts(new=new, good=good, struggling=struggling)
 
 
 def _compute_difficult_words(words) -> list[DifficultWord]:
@@ -88,7 +105,7 @@ def _compute_weekly_activity(sessions: list[dict]) -> list[WeeklyActivity]:
 
     by_date: dict[str, list[dict]] = defaultdict(list)
     for s in sessions:
-        ended = s.get("ended_at", "")
+        ended = s.get("ended_at") or ""
         if not ended:
             continue
         try:

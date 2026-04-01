@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import type { DashboardStats, RecentSession } from '../types'
 import { getDashboard, resetStats } from '../api/client'
 import StatsChart from '../components/StatsChart'
+import { useTutor } from '../context/TutorContext'
 
 const STAT_ICONS: Record<string, string> = {
   words: '\u{1F4DA}',
@@ -11,29 +12,26 @@ const STAT_ICONS: Record<string, string> = {
 }
 
 export default function DashboardPage() {
+  const { tutorId } = useTutor()
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const [showConfirm, setShowConfirm] = useState(false)
   const [resetting, setResetting] = useState(false)
 
-  useEffect(() => {
-    getDashboard().then(setStats)
-  }, [])
+  const load = () => getDashboard(tutorId).then(setStats)
+  useEffect(() => { load() }, [tutorId])
 
   const handleReset = async () => {
     setResetting(true)
     try {
-      await resetStats()
-      const fresh = await getDashboard()
-      setStats(fresh)
+      await resetStats(tutorId)
+      await load()
     } finally {
       setResetting(false)
       setShowConfirm(false)
     }
   }
 
-  if (!stats) {
-    return <p className="text-center text-gray-400 py-12">Loading...</p>
-  }
+  if (!stats) return <p className="text-center text-gray-400 py-12">Loading…</p>
 
   return (
     <div>
@@ -73,31 +71,65 @@ export default function DashboardPage() {
                 disabled={resetting}
                 className="flex-1 px-4 py-2.5 rounded-xl bg-red-500 text-white font-medium hover:bg-red-600 transition disabled:opacity-50"
               >
-                {resetting ? 'Resetting...' : 'Delete All'}
+                {resetting ? 'Resetting…' : 'Delete All'}
               </button>
             </div>
           </div>
         </div>
       )}
+
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <StatCard icon={STAT_ICONS.words} label="Total Words" value={stats.total_words} />
         <StatCard icon={STAT_ICONS.sessions} label="Sessions / Questions" value={`${stats.total_sessions} / ${stats.total_questions}`} />
         <StatCard icon={STAT_ICONS.average} label="Average Score" value={`${stats.average_score}%`} />
         <StatCard icon={STAT_ICONS.best} label="Best Score" value={`${stats.best_score}%`} />
       </div>
+
       <StatsChart data={stats.weekly_activity} />
-      {(stats.recent_sessions.length > 0 || stats.difficult_words.length > 0) && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-          {stats.recent_sessions.length > 0 && (
-            <div className="bg-white rounded-xl shadow-sm p-5">
-              <h3 className="text-base font-semibold text-filos-primary mb-3 font-headline">Recent Sessions</h3>
-              <div className="space-y-1.5">
-                {stats.recent_sessions.map((s) => (
-                  <RecentSessionRow key={s.id} s={s} />
-                ))}
-              </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+        {/* Left column: Recent Sessions */}
+        {stats.recent_sessions.length > 0 && (
+          <div className="bg-white rounded-xl shadow-sm p-5">
+            <h3 className="text-base font-semibold text-filos-primary mb-3 font-headline">Recent Sessions</h3>
+            <div className="space-y-1.5">
+              {stats.recent_sessions.map((s) => <RecentSessionRow key={s.id} s={s} />)}
             </div>
-          )}
+          </div>
+        )}
+
+        {/* Right column: Vocabulary Status + Top 10 Difficult Words */}
+        <div className="flex flex-col gap-6">
+          <div className="bg-white rounded-xl shadow-sm p-5">
+            <h3 className="text-base font-semibold text-filos-primary mb-3 font-headline">Vocabulary Status</h3>
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-gray-100">
+                  <th className="pb-2 text-left font-medium text-gray-500">Status</th>
+                  <th className="pb-2 text-right font-medium text-gray-500">Words</th>
+                  <th className="pb-2 text-right font-medium text-gray-500">Share</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-50">
+                <tr>
+                  <td className="py-2.5"><span className="inline-block text-xs font-medium px-2.5 py-1 rounded-full bg-sky-100 text-sky-600">New</span></td>
+                  <td className="py-2.5 text-right font-medium text-gray-700">{stats.word_status.new}</td>
+                  <td className="py-2.5 text-right text-gray-400">{stats.total_words ? Math.round(stats.word_status.new / stats.total_words * 100) : 0}%</td>
+                </tr>
+                <tr>
+                  <td className="py-2.5"><span className="inline-block text-xs font-medium px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700">Correct ≥ 80%</span></td>
+                  <td className="py-2.5 text-right font-medium text-gray-700">{stats.word_status.good}</td>
+                  <td className="py-2.5 text-right text-gray-400">{stats.total_words ? Math.round(stats.word_status.good / stats.total_words * 100) : 0}%</td>
+                </tr>
+                <tr>
+                  <td className="py-2.5"><span className="inline-block text-xs font-medium px-2.5 py-1 rounded-full bg-red-100 text-red-600">Correct &lt; 80%</span></td>
+                  <td className="py-2.5 text-right font-medium text-gray-700">{stats.word_status.struggling}</td>
+                  <td className="py-2.5 text-right text-gray-400">{stats.total_words ? Math.round(stats.word_status.struggling / stats.total_words * 100) : 0}%</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
           {stats.difficult_words.length > 0 && (
             <div className="bg-white rounded-xl shadow-sm p-5">
               <h3 className="text-base font-semibold text-filos-primary mb-3 font-headline">Top 10 Difficult Words</h3>
@@ -110,7 +142,7 @@ export default function DashboardPage() {
                     </div>
                     <div className="flex items-center gap-2 ml-2 flex-shrink-0">
                       <span className="text-xs text-gray-400">{w.times_correct}/{w.times_asked}</span>
-                      <span className={`font-bold text-sm ${w.success_percent >= 70 ? 'text-green-600' : w.success_percent >= 40 ? 'text-amber-500' : 'text-red-500'}`}>
+                      <span className={`font-bold text-sm ${w.success_percent >= 80 ? 'text-green-600' : w.success_percent >= 40 ? 'text-amber-500' : 'text-red-500'}`}>
                         {w.success_percent}%
                       </span>
                     </div>
@@ -120,7 +152,7 @@ export default function DashboardPage() {
             </div>
           )}
         </div>
-      )}
+      </div>
     </div>
   )
 }

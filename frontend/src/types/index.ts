@@ -9,7 +9,7 @@ export interface Word {
   created_at: string
   times_asked: number
   times_correct: number
-  last_asked: string
+  last_asked: string | null
 }
 
 export interface WordCreate {
@@ -34,11 +34,13 @@ export interface WordUpdate {
 
 export type QuizType = 'word' | 'sentence'
 export type SourceLanguage = 'english' | 'target_language'
+export type QuizFocus = 'balanced' | 'new_words' | 'mistakes'
 
 export interface QuizStartRequest {
   quiz_type: QuizType
   source_language: SourceLanguage
   num_questions: number
+  focus: QuizFocus
 }
 
 export interface QuizQuestion {
@@ -87,12 +89,19 @@ export interface DifficultWord {
   success_percent: number
 }
 
+export interface WordStatusCounts {
+  new: number
+  good: number
+  struggling: number
+}
+
 export interface DashboardStats {
   total_words: number
   total_sessions: number
   total_questions: number
   average_score: number
   best_score: number
+  word_status: WordStatusCounts
   recent_sessions: RecentSession[]
   weekly_activity: WeeklyActivity[]
   difficult_words: DifficultWord[]
@@ -114,6 +123,9 @@ export interface WeeklyActivity {
   avg_score: number
 }
 
-export interface AppConfig {
-  target_language: string
+export interface LanguageTutor {
+  id: string
+  user_id: string
+  language: string
+  created_at: string
 }
