@@ -156,6 +156,10 @@ export default function QuizSetup({ title, quizType, onStart, loading, error }: 
                     <td className="py-2"><span className="inline-block text-xs font-medium px-2.5 py-1 rounded-full bg-red-100 text-red-600">Correct &lt; 80%</span></td>
                     <td className="py-2 text-right font-medium text-gray-700">{wordStatus.struggling}</td>
                   </tr>
+                  <tr>
+                    <td className="py-2"><span className="inline-block text-xs font-medium px-2.5 py-1 rounded-full bg-violet-100 text-violet-700">★ Learned</span></td>
+                    <td className="py-2 text-right font-medium text-gray-700">{wordStatus.learned}</td>
+                  </tr>
                 </tbody>
               </table>
             </div>

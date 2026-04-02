@@ -238,11 +238,13 @@ def _get_session(session_id: str, user_id: str) -> QuizSession:
 
 
 def _apply_focus(words: list[Word], focus: QuizFocus) -> list[Word]:
+    from services.vocabulary_service import is_learned
     if focus == QuizFocus.new_words:
         return [w for w in words if w.times_asked == 0]
     if focus == QuizFocus.mistakes:
-        return [w for w in words if w.times_asked > 0 and w.times_correct < w.times_asked]
-    return words
+        return [w for w in words if w.times_asked > 0 and w.times_correct < w.times_asked and not is_learned(w)]
+    # balanced: exclude learned words so they stay out of the active pool
+    return [w for w in words if not is_learned(w)] or words  # fallback: use all if everything is learned
 
 
 def _weighted_sample(words: list[Word], k: int, focus: QuizFocus = QuizFocus.balanced) -> list[Word]:

@@ -36,3 +36,4 @@ class Word(BaseModel):
     times_asked: int = 0
     times_correct: int = 0
     last_asked: Optional[str] = None
+    current_streak: int = 0

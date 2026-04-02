@@ -10,6 +10,7 @@ export interface Word {
   times_asked: number
   times_correct: number
   last_asked: string | null
+  current_streak: number
 }
 
 export interface WordCreate {
@@ -93,6 +94,7 @@ export interface WordStatusCounts {
   new: number
   good: number
   struggling: number
+  learned: number
 }
 
 export interface DashboardStats {

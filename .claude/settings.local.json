@@ -37,7 +37,12 @@
       "Bash(do echo:*)",
       "Bash(/Users/keremerdem/Code/kaloma-ai/greek-tutor/frontend/public/favicon.svg:*)",
       "Bash(.venv/bin/pip install:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(fly status:*)",
+      "Bash(fly machine:*)",
+      "Bash(cp /Users/keremerdem/Code/kaloma-ai/greek-tutor/backend/data/Greek/sentence_structures.csv /tmp/ss.csv)",
+      "Bash(cp /tmp/ss.csv /Users/keremerdem/Code/kaloma-ai/greek-tutor/backend/data/Italian/sentence_structures.csv)",
+      "Bash(cp /tmp/ss.csv /Users/keremerdem/Code/kaloma-ai/greek-tutor/backend/data/French/sentence_structures.csv)"
     ]
   }
 }

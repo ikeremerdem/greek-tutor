@@ -7,7 +7,7 @@
 CREATE TABLE IF NOT EXISTS language_tutors (
     id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id     UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-    language    TEXT NOT NULL CHECK (language IN ('Greek', 'German', 'Spanish')),
+    language    TEXT NOT NULL CHECK (language IN ('Greek', 'German', 'Spanish', 'Italian', 'French')),
     created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     UNIQUE (user_id, language)
 );
@@ -25,6 +25,7 @@ CREATE TABLE IF NOT EXISTS vocabulary (
     times_asked     INTEGER NOT NULL DEFAULT 0,
     times_correct   INTEGER NOT NULL DEFAULT 0,
     last_asked      TIMESTAMPTZ,
+    current_streak  INTEGER NOT NULL DEFAULT 0,
     UNIQUE (tutor_id, english)
 );
 
@@ -42,6 +43,16 @@ CREATE TABLE IF NOT EXISTS quiz_sessions (
     ended_at        TIMESTAMPTZ,
     details_json    JSONB NOT NULL DEFAULT '[]'
 );
+
+-- ============================================================
+-- Migration: add current_streak (run on existing databases)
+-- ALTER TABLE vocabulary ADD COLUMN IF NOT EXISTS current_streak INTEGER NOT NULL DEFAULT 0;
+--
+-- Migration: add Italian and French language support (run on existing databases)
+-- ALTER TABLE language_tutors DROP CONSTRAINT IF EXISTS language_tutors_language_check;
+-- ALTER TABLE language_tutors ADD CONSTRAINT language_tutors_language_check
+--   CHECK (language IN ('Greek', 'German', 'Spanish', 'Italian', 'French'));
+-- ============================================================
 
 -- ============================================================
 -- Row Level Security

@@ -30,6 +30,7 @@ class WordStatusCounts(BaseModel):
     new: int
     good: int
     struggling: int
+    learned: int
 
 
 class DashboardStats(BaseModel):

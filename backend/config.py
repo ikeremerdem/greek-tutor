@@ -1,7 +1,11 @@
 from pydantic_settings import BaseSettings
 from pathlib import Path
 
-SUPPORTED_LANGUAGES = ["Greek", "German", "Spanish"]
+SUPPORTED_LANGUAGES = ["Greek", "German", "Spanish", "Italian", "French"]
+
+# Words with a correct-answer streak >= this value are considered "learned"
+# and are deprioritised in quiz selection.
+STREAK_LEARN_THRESHOLD = 5
 
 
 class Settings(BaseSettings):

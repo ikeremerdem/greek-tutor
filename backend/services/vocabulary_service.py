@@ -1,10 +1,17 @@
 from datetime import datetime, timezone
 
+from config import STREAK_LEARN_THRESHOLD
 from models.vocabulary import Word, WordCreate, WordUpdate
 from services.supabase_client import supabase
 
 
+def is_learned(word: Word) -> bool:
+    return word.current_streak >= STREAK_LEARN_THRESHOLD
+
+
 def _attention_weight(word: Word) -> float:
+    if is_learned(word):
+        return 0.1  # deprioritise learned words in list ordering too
     asked = word.times_asked
     if asked == 0:
         return 10.0
@@ -88,7 +95,7 @@ def delete_word(word_id: str, tutor_id: str) -> bool:
 def record_answer(word_id: str, correct: bool) -> None:
     response = (
         supabase.table("vocabulary")
-        .select("times_asked, times_correct")
+        .select("times_asked, times_correct, current_streak")
         .eq("id", word_id)
         .single()
         .execute()
@@ -97,8 +104,10 @@ def record_answer(word_id: str, correct: bool) -> None:
         return
     times_asked = response.data["times_asked"] + 1
     times_correct = response.data["times_correct"] + (1 if correct else 0)
+    current_streak = (response.data["current_streak"] + 1) if correct else 0
     supabase.table("vocabulary").update({
         "times_asked": times_asked,
         "times_correct": times_correct,
         "last_asked": datetime.now(timezone.utc).isoformat(),
+        "current_streak": current_streak,
     }).eq("id", word_id).execute()

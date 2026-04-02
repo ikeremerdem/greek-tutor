@@ -17,11 +17,25 @@ interface Props {
   onDelete: (id: string) => Promise<void>
 }
 
+const STREAK_LEARN_THRESHOLD = 5
+
 function AccuracyBadge({ word }: { word: Word }) {
   if (word.times_asked === 0) return <span className="inline-block text-xs font-medium px-2.5 py-1 rounded-full bg-gray-100 text-gray-400">--</span>
   const pct = Math.round((word.times_correct / word.times_asked) * 100)
   const color = pct >= 80 ? 'bg-emerald-100 text-emerald-700' : pct >= 50 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'
   return <span className={`inline-block text-xs font-medium px-2.5 py-1 rounded-full ${color}`}>{pct}%</span>
+}
+
+function StreakBadge({ streak }: { streak: number }) {
+  if (streak === 0) return <span className="text-xs text-gray-300">—</span>
+  const learned = streak >= STREAK_LEARN_THRESHOLD
+  const color = learned ? 'bg-violet-100 text-violet-700' : 'bg-amber-100 text-amber-700'
+  return (
+    <span className={`inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full ${color}`}>
+      {learned && <span title="Learned">★</span>}
+      {streak}
+    </span>
+  )
 }
 
 export default function WordTable({ words, onUpdate, onDelete }: Props) {
@@ -50,6 +64,7 @@ export default function WordTable({ words, onUpdate, onDelete }: Props) {
             <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Notes</th>
             <th className="px-5 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Asked</th>
             <th className="px-5 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Accuracy</th>
+            <th className="px-5 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Streak</th>
             <th className="px-5 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">Actions</th>
           </tr>
         </thead>
@@ -72,6 +87,7 @@ export default function WordTable({ words, onUpdate, onDelete }: Props) {
                       : word.times_asked}
                   </td>
                   <td className="px-5 py-2 text-center"><AccuracyBadge word={word} /></td>
+                  <td className="px-5 py-2 text-center"><StreakBadge streak={word.current_streak} /></td>
                   <td className="px-5 py-2 text-right space-x-1">
                     <button onClick={saveEdit} className="p-1.5 rounded-lg text-green-600 hover:bg-green-50 transition" title="Save">
                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4.5 h-4.5"><path fillRule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clipRule="evenodd" /></svg>
@@ -93,6 +109,7 @@ export default function WordTable({ words, onUpdate, onDelete }: Props) {
                       : word.times_asked}
                   </td>
                   <td className="px-5 py-3.5 text-center"><AccuracyBadge word={word} /></td>
+                  <td className="px-5 py-3.5 text-center"><StreakBadge streak={word.current_streak} /></td>
                   <td className="px-5 py-3.5 text-right whitespace-nowrap space-x-1">
                     <button onClick={() => startEdit(word)} className="p-1.5 rounded-lg text-gray-400 hover:text-filos-primary hover:bg-filos-surface transition" title="Edit">
                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4.5 h-4.5"><path d="m5.433 13.917 1.262-3.155A4 4 0 0 1 7.58 9.42l6.92-6.918a2.121 2.121 0 0 1 3 3l-6.92 6.918c-.383.383-.84.685-1.343.886l-3.154 1.262a.5.5 0 0 1-.65-.65Z" /><path d="M3.5 5.75c0-.69.56-1.25 1.25-1.25H10A.75.75 0 0 0 10 3H4.75A2.75 2.75 0 0 0 2 5.75v9.5A2.75 2.75 0 0 0 4.75 18h9.5A2.75 2.75 0 0 0 17 15.25V10a.75.75 0 0 0-1.5 0v5.25c0 .69-.56 1.25-1.25 1.25h-9.5c-.69 0-1.25-.56-1.25-1.25v-9.5Z" /></svg>

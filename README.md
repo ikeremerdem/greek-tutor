@@ -5,12 +5,13 @@ A multi-user, web-based language learning application with vocabulary management
 ## Features
 
 - **Multi-user auth** — Register and sign in via Supabase Auth. Each user's data is fully isolated.
-- **Language Tutors** — Create one tutor per language (Greek, German, Spanish). Switch between them freely.
+- **Language Tutors** — Create one tutor per language (Greek, German, Spanish, Italian, French). Switch between them freely.
 - **Vocabulary Management** — Add words one at a time or in bulk. Auto-lookup translates, classifies, and adds grammar notes via LLM. Filter by text, word type, or performance (New / Correct ≥ 80% / Correct < 80%), with pagination.
 - **Bulk Word Add** — Paste a list of English words (one per line); the app looks each up and adds it automatically, skipping duplicates.
-- **Word Quiz** — Flashcards with a visual direction toggle, focus modes (Balanced / New words / Mistakes), and quick question count presets.
+- **Word Quiz** — Flashcards with a visual direction toggle, focus modes (Balanced / New words / Mistakes), and quick question count presets. Learned words are automatically deprioritised.
 - **Sentence Quiz** — AI-generated sentences using only your vocabulary. Answers are checked semantically, handling word order and accent variations.
-- **Dashboard** — Weekly activity chart, vocabulary status breakdown, recent sessions, and your 10 most difficult words.
+- **Streak & Learned words** — Each word tracks a correct-answer streak. Once a word reaches `STREAK_LEARN_THRESHOLD` (default 5) consecutive correct answers it is marked **Learned** and removed from the active quiz pool. The streak resets on a wrong answer.
+- **Dashboard** — Weekly activity chart, vocabulary status breakdown (New / Correct ≥ 80% / Correct < 80% / Learned), recent sessions, and your 10 most difficult words.
 
 ## Tech Stack
 

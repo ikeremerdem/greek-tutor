@@ -13,7 +13,7 @@ The application helps users learn a target language from English. It is a multi-
 ## 2. Language Tutors
 
 - After signing in, a user lands on the **My Tutors** page listing their tutors.
-- A user can create a Language Tutor by selecting a language (currently: Greek, German, Spanish).
+- A user can create a Language Tutor by selecting a language (currently: Greek, German, Spanish, Italian, French).
 - Only one tutor per language per user is allowed (enforced by a database unique constraint).
 - Entering a tutor scopes the entire app (vocabulary, quizzes, stats) to that tutor and language.
 - Adding new supported languages requires adding the name to the backend config and creating a sentence structures CSV file — no other code changes required.
@@ -44,7 +44,7 @@ The application helps users learn a target language from English. It is a multi-
 - The vocabulary list supports filtering by:
   - Text search (English or target language)
   - Word type (verb, noun, adjective, etc.)
-  - Performance: All words / New (never asked) / Correct ≥ 80% / Correct < 80%
+  - Performance: All words / New (never asked) / Correct ≥ 80% / Correct < 80% / Learned (streak ≥ threshold)
 - Words that have never been asked display a "new" pill instead of a count of 0.
 - Pagination shows 20 words per page.
 - Words can be edited inline or deleted.
@@ -54,11 +54,11 @@ The application helps users learn a target language from English. It is a multi-
 - The quiz setup screen offers:
   - **Translation direction** — a visual toggle button showing e.g. `English → Greek`; clicking it swaps the direction.
   - **Focus** — three pill options:
-    - *Balanced*: weighted mix of all words (new words and mistakes get higher weight)
+    - *Balanced*: weighted mix of all words (new words and mistakes get higher weight); learned words excluded
     - *New words*: only words never practiced, selected uniformly at random
-    - *Mistakes*: only words answered incorrectly at least once, weighted toward higher error rates
+    - *Mistakes*: only words answered incorrectly at least once, weighted toward higher error rates; learned words excluded
   - **Number of questions** — quick-pick buttons (5 / 10 / 20 / 50) plus a custom input.
-- The setup screen also shows a Vocabulary Status summary (New / Correct ≥ 80% / Correct < 80%) and recent session history.
+- The setup screen also shows a Vocabulary Status summary (New / Correct ≥ 80% / Correct < 80% / Learned) and recent session history.
 - After each answer, the result (correct/incorrect), the correct answer, and grammar notes are displayed.
 - At the end of the session, a summary shows score, per-word results, and session statistics.
 
@@ -77,15 +77,23 @@ The application helps users learn a target language from English. It is a multi-
 - Weekly activity chart showing questions answered per day.
 - Two-column panel below the chart:
   - **Left**: Recent session history (last 10 sessions).
-  - **Right**: Vocabulary Status table (New / Correct ≥ 80% / Correct < 80% with counts and share %), followed by Top 10 most difficult words (lowest accuracy, sorted ascending).
+  - **Right**: Vocabulary Status table (New / Correct ≥ 80% / Correct < 80% / ★ Learned with counts and share %), followed by Top 10 most difficult words (lowest accuracy, sorted ascending).
 - A "Reset Statistics" button that clears all session history without affecting vocabulary.
 
-## 10. LLM Provider
+## 10. Streak & Learned Words
+
+- Each vocabulary word tracks a `current_streak` counter (consecutive correct answers).
+- A correct quiz answer increments the streak; a wrong answer resets it to 0.
+- A configurable backend constant `STREAK_LEARN_THRESHOLD` (default 5) determines when a word is considered **learned**.
+- Learned words (streak ≥ threshold) are deprioritised: excluded from *Balanced* and *Mistakes* quiz pools (with a fallback to all words if every word is learned), and never selected for *New words* focus.
+- The streak is displayed as a column in the vocabulary table. A star (★) is shown once a word is learned.
+
+## 11. LLM Provider
 
 - The app works with any LLM provider (OpenAI, Anthropic, Ollama, LMStudio, etc.) using LiteLLM as the abstraction layer.
 - Configuration is done via environment variables: `LLM_MODEL`, `LLM_API_KEY`, `LLM_API_BASE`.
 
-## 11. Data Storage
+## 12. Data Storage
 
 - All vocabulary, quiz sessions, and tutor data are stored in Supabase (PostgreSQL).
 - Sentence structure templates remain file-based per language.

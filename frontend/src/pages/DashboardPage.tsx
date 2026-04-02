@@ -126,6 +126,11 @@ export default function DashboardPage() {
                   <td className="py-2.5 text-right font-medium text-gray-700">{stats.word_status.struggling}</td>
                   <td className="py-2.5 text-right text-gray-400">{stats.total_words ? Math.round(stats.word_status.struggling / stats.total_words * 100) : 0}%</td>
                 </tr>
+                <tr>
+                  <td className="py-2.5"><span className="inline-block text-xs font-medium px-2.5 py-1 rounded-full bg-violet-100 text-violet-700">★ Learned</span></td>
+                  <td className="py-2.5 text-right font-medium text-gray-700">{stats.word_status.learned}</td>
+                  <td className="py-2.5 text-right text-gray-400">{stats.total_words ? Math.round(stats.word_status.learned / stats.total_words * 100) : 0}%</td>
+                </tr>
               </tbody>
             </table>
           </div>

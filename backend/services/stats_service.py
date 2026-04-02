@@ -77,10 +77,12 @@ def get_sessions_by_type(tutor_id: str, quiz_type: str) -> list[RecentSession]:
 
 
 def _compute_word_status(words) -> WordStatusCounts:
-    new = sum(1 for w in words if w.times_asked == 0)
-    good = sum(1 for w in words if w.times_asked > 0 and w.times_correct / w.times_asked >= 0.8)
-    struggling = sum(1 for w in words if w.times_asked > 0 and w.times_correct / w.times_asked < 0.8)
-    return WordStatusCounts(new=new, good=good, struggling=struggling)
+    from services.vocabulary_service import is_learned
+    new = sum(1 for w in words if w.times_asked == 0 and not is_learned(w))
+    learned = sum(1 for w in words if is_learned(w))
+    good = sum(1 for w in words if w.times_asked > 0 and not is_learned(w) and w.times_correct / w.times_asked >= 0.8)
+    struggling = sum(1 for w in words if w.times_asked > 0 and not is_learned(w) and w.times_correct / w.times_asked < 0.8)
+    return WordStatusCounts(new=new, good=good, struggling=struggling, learned=learned)
 
 
 def _compute_difficult_words(words) -> list[DifficultWord]:

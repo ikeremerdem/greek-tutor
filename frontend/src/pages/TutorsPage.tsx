@@ -5,12 +5,14 @@ import { getTutors, createTutor, deleteTutor } from '../api/client'
 import { useAuth } from '../context/AuthContext'
 import FilosLogo from '../components/FilosLogo'
 
-const SUPPORTED_LANGUAGES = ['Greek', 'German', 'Spanish']
+const SUPPORTED_LANGUAGES = ['Greek', 'German', 'Spanish', 'Italian', 'French']
 
 const LANGUAGE_FLAGS: Record<string, string> = {
   Greek: '🇬🇷',
   German: '🇩🇪',
   Spanish: '🇪🇸',
+  Italian: '🇮🇹',
+  French: '🇫🇷',
 }
 
 export default function TutorsPage() {
