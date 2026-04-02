@@ -7,7 +7,7 @@ app = FastAPI(title="Filos Language Tutor API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=settings.allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
