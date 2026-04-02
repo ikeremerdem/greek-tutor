@@ -1,22 +1,8 @@
 from datetime import datetime, timezone
 
-from config import STREAK_LEARN_THRESHOLD
 from models.vocabulary import Word, WordCreate, WordUpdate
+from services.scoring import attention_weight
 from services.supabase_client import supabase
-
-
-def is_learned(word: Word) -> bool:
-    return word.current_streak >= STREAK_LEARN_THRESHOLD
-
-
-def _attention_weight(word: Word) -> float:
-    if is_learned(word):
-        return 0.1  # deprioritise learned words in list ordering too
-    asked = word.times_asked
-    if asked == 0:
-        return 10.0
-    accuracy = word.times_correct / asked
-    return max(1.0, 5.0 * (1 - accuracy) + 2.0 / (1 + asked))
 
 
 def list_words(tutor_id: str) -> list[Word]:
@@ -27,7 +13,7 @@ def list_words(tutor_id: str) -> list[Word]:
         .execute()
     )
     words = [Word(**row) for row in response.data]
-    return sorted(words, key=_attention_weight, reverse=True)
+    return sorted(words, key=attention_weight, reverse=True)
 
 
 def get_word(word_id: str, tutor_id: str) -> Word | None:

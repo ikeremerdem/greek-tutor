@@ -3,6 +3,7 @@ from datetime import datetime, timedelta, timezone
 
 from models.stats import DashboardStats, DifficultWord, RecentSession, WeeklyActivity, WordStatusCounts
 from services import vocabulary_service
+from services.scoring import is_learned
 from services.supabase_client import supabase
 
 
@@ -77,7 +78,6 @@ def get_sessions_by_type(tutor_id: str, quiz_type: str) -> list[RecentSession]:
 
 
 def _compute_word_status(words) -> WordStatusCounts:
-    from services.vocabulary_service import is_learned
     new = sum(1 for w in words if w.times_asked == 0 and not is_learned(w))
     learned = sum(1 for w in words if is_learned(w))
     good = sum(1 for w in words if w.times_asked > 0 and not is_learned(w) and w.times_correct / w.times_asked >= 0.8)

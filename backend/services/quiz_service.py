@@ -11,6 +11,7 @@ from models.quiz import (
 )
 from models.vocabulary import Word
 from services import vocabulary_service
+from services.scoring import word_weight, EXCLUDE
 from services.supabase_client import supabase
 
 SESSION_COLUMNS = [
@@ -58,13 +59,15 @@ def start_session(tutor_id: str, user_id: str, language: str, req: QuizStartRequ
         total_q = max(1, req.num_questions)
         selected: list[Word] = []
     else:
-        pool = _apply_focus(words, req.focus)
-        if not pool:
+        eligible = [w for w in words if word_weight(w, req.focus) > EXCLUDE]
+        if not eligible and req.focus == QuizFocus.balanced:
+            eligible = words  # fallback: if every word is learned, use all
+        if not eligible:
             raise ValueError(
                 "No words match the selected focus. Try a different focus or add more words."
             )
-        num_q = min(req.num_questions, len(pool))
-        selected = _weighted_sample(pool, num_q, req.focus)
+        num_q = min(req.num_questions, len(eligible))
+        selected = _weighted_sample(eligible, num_q, req.focus)
         total_q = len(selected)
 
     session_id = uuid.uuid4().hex[:8]
@@ -237,35 +240,13 @@ def _get_session(session_id: str, user_id: str) -> QuizSession:
     return session
 
 
-def _apply_focus(words: list[Word], focus: QuizFocus) -> list[Word]:
-    from services.vocabulary_service import is_learned
-    if focus == QuizFocus.new_words:
-        return [w for w in words if w.times_asked == 0]
-    if focus == QuizFocus.mistakes:
-        return [w for w in words if w.times_asked > 0 and w.times_correct < w.times_asked and not is_learned(w)]
-    # balanced: exclude learned words so they stay out of the active pool
-    return [w for w in words if not is_learned(w)] or words  # fallback: use all if everything is learned
-
-
-def _weighted_sample(words: list[Word], k: int, focus: QuizFocus = QuizFocus.balanced) -> list[Word]:
-    remaining = list(words)
+def _weighted_sample(words: list[Word], k: int, focus: QuizFocus) -> list[Word]:
+    # Pre-compute weights once; words are already filtered to eligible (weight > 0).
+    remaining: list[tuple[Word, float]] = [(w, word_weight(w, focus) or 1.0) for w in words]
     selected: list[Word] = []
     for _ in range(k):
-        weights = []
-        for w in remaining:
-            asked = w.times_asked
-            if focus == QuizFocus.new_words:
-                weights.append(1.0)
-            elif focus == QuizFocus.mistakes:
-                accuracy = w.times_correct / asked
-                weights.append(max(1.0, 5.0 * (1 - accuracy) + 2.0 / (1 + asked)))
-            else:
-                if asked == 0:
-                    weights.append(10.0)
-                else:
-                    accuracy = w.times_correct / asked
-                    weights.append(max(1.0, 5.0 * (1 - accuracy) + 2.0 / (1 + asked)))
-        chosen = random.choices(remaining, weights=weights, k=1)[0]
+        ws, wts = zip(*remaining)
+        chosen = random.choices(ws, weights=wts, k=1)[0]
         selected.append(chosen)
-        remaining.remove(chosen)
+        remaining = [(w, wt) for w, wt in remaining if w is not chosen]
     return selected
