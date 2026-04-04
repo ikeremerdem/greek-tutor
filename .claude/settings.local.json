@@ -48,7 +48,8 @@
       "Bash(do)",
       "Read(//Users/keremerdem/Code/kaloma-ai/greek-tutor/**)",
       "Bash(done)",
-      "Bash(python3 -c \":*)"
+      "Bash(git pull:*)",
+      "Bash(git stash:*)"
     ]
   }
 }
