@@ -49,15 +49,21 @@ The application helps users learn a target language from English. It is a multi-
 
 ## 5a. Word Packages
 
-- The vocabulary page also offers a **Load Package** mode.
-- Word packages are JSON files stored in `backend/data/packages/`, each with a name, description, a list of English words, and a `category` field.
-- The package browser shows all available packages as cards with name, description, word count, and category badge.
-- Selecting a package shows a preview of all words (duplicates shown as strikethrough), and the number of new words to be added.
-- Clicking "Load N words →" starts the sequential LLM lookup and import. A warning banner is shown during import; navigating away is blocked via `beforeunload`.
-- When a word already exists in the vocabulary, the package's category is merged into that word's categories instead of skipping it entirely.
-- Packages are language-agnostic — the same package file works for all target languages.
-- New packages can be added by dropping a JSON file into `backend/data/packages/` with the format: `{"name": "...", "description": "...", "category": "...", "words": [...]}`.
-- Built-in packages: Common Verbs, Common Nouns, Food & Drink, Travel, Numbers & Time, Body & Health, Colors.
+- Word packages are stored in Supabase (`word_packages` table) with: `id`, `user_id`, `name` (unique), `description`, `category`, `words` (TEXT[]), `word_count` (cached), `is_public`, `created_at`.
+- Any authenticated user can create packages. Packages default to private (`is_public = false`).
+- Public packages are visible to all users. Private packages are visible only to their owner.
+- Only the owner can edit or delete a package.
+- The **Packages page** (`/packages`) lets users create, edit, and delete their own packages. It also shows all public packages from other users.
+  - Create/Edit form: Name, Description, Category, is_public toggle, words textarea (one English word/phrase per line).
+  - Delete requires confirmation.
+- The vocabulary page offers an **Add Word Package** tab for importing packages into the active tutor's vocabulary.
+  - Package cards show public/private and "Yours" badges.
+  - A "Manage packages →" link navigates to the Packages page.
+  - Selecting a package shows a preview of all words (duplicates shown as strikethrough) and the number of new words to be added.
+  - Clicking "Load N words →" starts sequential LLM lookup and import. A warning banner is shown during import; navigating away is blocked via `beforeunload`.
+  - When a word already exists, the package's category is merged into that word's categories instead of skipping it.
+- Packages are language-agnostic — the same package works for all target languages.
+- The 7 built-in packages (Common Verbs, Common Nouns, Food & Drink, Travel, Numbers & Time, Body & Health, Colors) are seeded via `POST /api/admin/packages/seed` (admin-only, idempotent).
 
 ## 6. Vocabulary List
 
