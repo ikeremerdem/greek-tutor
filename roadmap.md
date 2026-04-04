@@ -4,14 +4,17 @@
 - Creating teacher packages, where the teacher can add words, make his tutor public, others can subscribe to it, to get the words added by her.
 - Check word results with the LLM, not by doing a string comparison
 - Add the functionality to differentiate words with the parenthesis when adding to the vocabulary (requires previous feature)
-- Add conversations, ask Murat for details
+- Add conversations, ask Murat for details (Murat)
 - Add feature request page / feedback page
 - Consider time decay for already learned words
-- Adding a new package, making it public
 - Incorporating / in target language, checking only one of them. Use AI if answer is not exactly equal.
 - Caching word lookups to save AI time
 - Make the lookup rules more rigid for the notes field
 - Add new packages, share the packages. For this, we need to move them to DB first. We can also cache them. 
 - Ability to override the package existing words
+- The system should be able to pardon small errors, it should be a setting, default on. (Aret)
+- Make sure that it runs correctly on the phone screens (Aret)
+- Add release notes section
+- Add messages to the user
 
 
