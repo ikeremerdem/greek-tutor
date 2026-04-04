@@ -11,3 +11,7 @@
 - Incorporating / in target language, checking only one of them. Use AI if answer is not exactly equal.
 - Caching word lookups to save AI time
 - Make the lookup rules more rigid for the notes field
+- Add new packages, share the packages. For this, we need to move them to DB first. We can also cache them. 
+- Ability to override the package existing words
+
+
