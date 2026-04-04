@@ -17,6 +17,8 @@ import type {
   LanguageTutor,
   WordPackageSummary,
   WordPackageDetail,
+  WordPackageCreate,
+  WordPackageUpdate,
 } from '../types'
 
 const BASE = (import.meta.env.VITE_API_BASE_URL ?? '') + '/api'
@@ -121,5 +123,14 @@ export const getAdminUserStats = () =>
 export const getPackages = () =>
   request<WordPackageSummary[]>('/packages')
 
-export const getPackage = (slug: string) =>
-  request<WordPackageDetail>(`/packages/${slug}`)
+export const getPackage = (id: string) =>
+  request<WordPackageDetail>(`/packages/${id}`)
+
+export const createPackage = (data: WordPackageCreate) =>
+  request<WordPackageDetail>('/packages', { method: 'POST', body: JSON.stringify(data) })
+
+export const updatePackage = (id: string, data: WordPackageUpdate) =>
+  request<WordPackageDetail>(`/packages/${id}`, { method: 'PUT', body: JSON.stringify(data) })
+
+export const deletePackage = (id: string) =>
+  request<void>(`/packages/${id}`, { method: 'DELETE' })

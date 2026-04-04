@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import type { Word, WordPackageSummary, WordPackageDetail } from '../types'
 import { getPackages, getPackage, lookupWord, addWord, addWordCategories } from '../api/client'
 import { useTutor } from '../context/TutorContext'
+import { useAuth } from '../context/AuthContext'
 
 type ItemStatus = 'pending' | 'processing' | 'added' | 'duplicate' | 'error'
 
@@ -34,6 +36,7 @@ const statusColor: Record<ItemStatus, string> = {
 
 export default function PackageWordForm({ words, onDone }: Props) {
   const { tutorId } = useTutor()
+  const { user } = useAuth()
   const [packages, setPackages] = useState<WordPackageSummary[]>([])
   const [preview, setPreview] = useState<WordPackageDetail | null>(null)
   const [items, setItems] = useState<Item[]>([])
@@ -58,8 +61,8 @@ export default function PackageWordForm({ words, onDone }: Props) {
   const updateItem = (index: number, patch: Partial<Item>) =>
     setItems((prev) => prev.map((it, i) => (i === index ? { ...it, ...patch } : it)))
 
-  const handleSelectPackage = async (slug: string) => {
-    const pkg = await getPackage(slug)
+  const handleSelectPackage = async (id: string) => {
+    const pkg = await getPackage(id)
     setPreview(pkg)
     setItems([])
     setDone(false)
@@ -141,16 +144,31 @@ export default function PackageWordForm({ words, onDone }: Props) {
   if (!preview) {
     return (
       <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
-        <h2 className="text-lg font-semibold mb-1 text-filos-primary font-headline">Load Package</h2>
+        <div className="flex items-center justify-between mb-1">
+          <h2 className="text-lg font-semibold text-filos-primary font-headline">Add Word Package</h2>
+          <Link to="/packages" className="text-sm text-filos-primary hover:underline font-medium">
+            Manage packages →
+          </Link>
+        </div>
         <p className="text-sm text-gray-400 mb-5">Select a package to preview its words before importing.</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {packages.map((pkg) => (
             <button
-              key={pkg.slug}
-              onClick={() => handleSelectPackage(pkg.slug)}
+              key={pkg.id}
+              onClick={() => handleSelectPackage(pkg.id)}
               className="text-left p-4 rounded-xl border-2 border-gray-100 hover:border-filos-primary/40 hover:bg-filos-surface transition group"
             >
-              <p className="font-semibold text-gray-800 group-hover:text-filos-primary transition mb-1">{pkg.name}</p>
+              <div className="flex items-start justify-between gap-2 mb-1">
+                <p className="font-semibold text-gray-800 group-hover:text-filos-primary transition">{pkg.name}</p>
+                <div className="flex gap-1 flex-shrink-0">
+                  {pkg.user_id === user?.id && (
+                    <span className="text-xs px-1.5 py-0.5 rounded bg-filos-primary/10 text-filos-primary font-medium">Yours</span>
+                  )}
+                  {!pkg.is_public && (
+                    <span className="text-xs px-1.5 py-0.5 rounded bg-gray-100 text-gray-400 font-medium">Private</span>
+                  )}
+                </div>
+              </div>
               <p className="text-xs text-gray-400 mb-3 leading-snug">{pkg.description}</p>
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="inline-block text-xs font-medium px-2.5 py-1 rounded-full bg-filos-primary/10 text-filos-primary">

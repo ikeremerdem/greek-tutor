@@ -18,6 +18,7 @@ export default function Layout() {
     { to: `/tutors/${id}/vocabulary`, label: 'Vocabulary' },
     { to: `/tutors/${id}/quiz/word`, label: 'Word Quiz' },
     { to: `/tutors/${id}/quiz/sentence`, label: 'Sentence Quiz' },
+    { to: '/packages', label: 'Packages' },
   ]
 
   return (

@@ -97,7 +97,7 @@ export default function VocabularyPage() {
             onClick={() => setAddMode('package')}
             className={`px-4 py-1.5 transition ${addMode === 'package' ? 'bg-filos-primary text-white' : 'text-gray-500 hover:bg-gray-50'}`}
           >
-            Load Package
+            Add Word Package
           </button>
         </div>
       </div>

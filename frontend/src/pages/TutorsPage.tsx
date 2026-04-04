@@ -65,6 +65,12 @@ export default function TutorsPage() {
             <h1 className="text-xl font-bold text-filos-primary font-headline">Filos</h1>
           </div>
           <div className="flex items-center gap-4">
+            <button
+              onClick={() => navigate('/packages')}
+              className="text-sm text-gray-500 hover:text-filos-primary font-medium transition"
+            >
+              Packages
+            </button>
             {isAdmin && (
               <button
                 onClick={() => navigate('/admin')}

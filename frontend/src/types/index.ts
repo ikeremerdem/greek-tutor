@@ -136,19 +136,34 @@ export interface WeeklyActivity {
 }
 
 export interface WordPackageSummary {
-  slug: string
+  id: string
+  user_id: string
   name: string
   description: string
-  word_count: number
   category: string
+  word_count: number
+  is_public: boolean
+  created_at: string
 }
 
-export interface WordPackageDetail {
-  slug: string
+export interface WordPackageDetail extends WordPackageSummary {
+  words: string[]
+}
+
+export interface WordPackageCreate {
   name: string
   description: string
-  words: string[]
   category: string
+  words: string[]
+  is_public: boolean
+}
+
+export interface WordPackageUpdate {
+  name?: string
+  description?: string
+  category?: string
+  words?: string[]
+  is_public?: boolean
 }
 
 export interface AdminUserStats {

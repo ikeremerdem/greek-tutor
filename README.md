@@ -9,7 +9,7 @@ A multi-user, web-based language learning application with vocabulary management
 - **Vocabulary Management** — Add words one at a time, in bulk, or via pre-built packages. Auto-lookup works in both directions (English → target language or target language → English), classifying and adding grammar notes via LLM. Filter by text, word type, performance category, or user-defined category, with pagination.
 - **Word Categories** — Words can be tagged with one or more user-defined categories (e.g. "travel", "food"). Categories are assigned when adding words individually, in bulk, or from a package. Duplicate words encountered during bulk/package import get the new category merged in rather than being skipped outright.
 - **Multiple Word Add** — Paste a list of English words (one per line); the app looks each up and adds it automatically. Duplicates are skipped (or updated with any specified categories).
-- **Word Packages** — Pre-built thematic word lists (Common Verbs, Common Nouns, Food & Drink, Travel, Numbers & Time, Body & Health, Colors) stored as JSON files. Each package has a default category applied automatically on import. Load a package to preview words before importing, with duplicates shown as strikethrough.
+- **Word Packages** — Thematic word lists stored in Supabase. Any user can create packages, flag them as public (visible to all), and edit or delete their own. Public packages are visible to everyone. The 7 built-in packages (Common Verbs, Common Nouns, Food & Drink, Travel, Numbers & Time, Body & Health, Colors) are seeded via an admin endpoint. Each package has a category applied automatically on import. Preview words before importing, with duplicates shown as strikethrough.
 - **Word Quiz** — Flashcards with a visual direction toggle, focus modes (Balanced / New words / Struggling), and quick question count presets. Learned words are automatically excluded from Balanced and Struggling pools.
 - **Sentence Quiz** — AI-generated sentences using only your vocabulary. Answers are checked semantically, handling word order and accent variations.
 - **Streak & Word Categories** — Each word tracks a correct-answer streak. Words are classified into four categories: **New** (never asked), **Struggling** (streak = 0, asked at least once), **Learning** (streak > 0 and < threshold), **Learned** (streak ≥ `STREAK_LEARN_THRESHOLD`, default 5). Learned words are removed from the active quiz pool.
@@ -134,8 +134,8 @@ backend/
     vocabulary.py         #   /api/tutors/{id}/vocabulary
     quiz.py               #   /api/tutors/{id}/quiz
     stats.py              #   /api/tutors/{id}/stats
-    packages.py           #   /api/packages
-    admin.py              #   /api/admin (admin-only)
+    packages.py           #   /api/packages (CRUD, DB-backed)
+    admin.py              #   /api/admin (admin-only, includes seed endpoint)
   services/
     supabase_client.py    # Supabase service-role client
     tutor_service.py      # Language tutor CRUD
@@ -151,7 +151,7 @@ backend/
     Spanish/sentence_structures.csv
     Italian/sentence_structures.csv
     French/sentence_structures.csv
-    packages/                     # Word package JSON files
+    packages/                     # Legacy JSON files (used only for seed migration)
       common_verbs.json
       common_nouns.json
       food_and_drink.json

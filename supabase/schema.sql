@@ -45,6 +45,19 @@ CREATE TABLE IF NOT EXISTS quiz_sessions (
     details_json    JSONB NOT NULL DEFAULT '[]'
 );
 
+-- Word Packages (user-created, optionally public)
+CREATE TABLE IF NOT EXISTS word_packages (
+    id          UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id     UUID        NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    name        TEXT        NOT NULL UNIQUE,
+    description TEXT        NOT NULL DEFAULT '',
+    category    TEXT        NOT NULL DEFAULT '',
+    words       TEXT[]      NOT NULL DEFAULT '{}',
+    word_count  INTEGER     NOT NULL DEFAULT 0,
+    is_public   BOOLEAN     NOT NULL DEFAULT false,
+    created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 -- ============================================================
 -- Migration: add current_streak (run on existing databases)
 -- ALTER TABLE vocabulary ADD COLUMN IF NOT EXISTS current_streak INTEGER NOT NULL DEFAULT 0;
@@ -56,6 +69,9 @@ CREATE TABLE IF NOT EXISTS quiz_sessions (
 -- ALTER TABLE language_tutors DROP CONSTRAINT IF EXISTS language_tutors_language_check;
 -- ALTER TABLE language_tutors ADD CONSTRAINT language_tutors_language_check
 --   CHECK (language IN ('Greek', 'German', 'Spanish', 'Italian', 'French'));
+--
+-- Migration: add word_packages table (run on existing databases)
+-- (copy the CREATE TABLE word_packages block above and run it)
 -- ============================================================
 
 -- ============================================================
@@ -83,6 +99,17 @@ CREATE POLICY "Users can update own vocabulary"
     ON vocabulary FOR UPDATE USING (auth.uid() = user_id);
 CREATE POLICY "Users can delete own vocabulary"
     ON vocabulary FOR DELETE USING (auth.uid() = user_id);
+
+-- word_packages policies
+ALTER TABLE word_packages ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Anyone can view public packages"
+    ON word_packages FOR SELECT USING (is_public OR auth.uid() = user_id);
+CREATE POLICY "Users can create own packages"
+    ON word_packages FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can update own packages"
+    ON word_packages FOR UPDATE USING (auth.uid() = user_id);
+CREATE POLICY "Users can delete own packages"
+    ON word_packages FOR DELETE USING (auth.uid() = user_id);
 
 -- quiz_sessions policies
 CREATE POLICY "Users can view own sessions"

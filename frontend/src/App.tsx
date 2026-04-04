@@ -9,6 +9,7 @@ import VocabularyPage from './pages/VocabularyPage'
 import WordQuizPage from './pages/WordQuizPage'
 import SentenceQuizPage from './pages/SentenceQuizPage'
 import AdminPage from './pages/AdminPage'
+import PackagesPage from './pages/PackagesPage'
 
 function AuthGuard({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth()
@@ -30,6 +31,7 @@ function AppRoutes() {
         <Route path="quiz/word" element={<WordQuizPage />} />
         <Route path="quiz/sentence" element={<SentenceQuizPage />} />
       </Route>
+      <Route path="/packages" element={<AuthGuard><PackagesPage /></AuthGuard>} />
       <Route path="/admin" element={<AuthGuard><AdminPage /></AuthGuard>} />
       <Route path="*" element={<Navigate to="/tutors" replace />} />
     </Routes>
