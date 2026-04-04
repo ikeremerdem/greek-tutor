@@ -1,4 +1,5 @@
-import { NavLink, Outlet, useParams, useNavigate } from 'react-router-dom'
+import { useState, useRef, useEffect } from 'react'
+import { NavLink, Link, Outlet, useParams, useNavigate } from 'react-router-dom'
 import FilosLogo from './FilosLogo'
 import { useTutor } from '../context/TutorContext'
 import { useAuth } from '../context/AuthContext'
@@ -12,13 +13,24 @@ export default function Layout() {
   const { tutorId: paramId } = useParams<{ tutorId: string }>()
   const navigate = useNavigate()
   const id = tutorId || paramId || ''
+  const [menuOpen, setMenuOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
 
   const links = [
     { to: `/tutors/${id}/dashboard`, label: 'Dashboard' },
     { to: `/tutors/${id}/vocabulary`, label: 'Vocabulary' },
     { to: `/tutors/${id}/quiz/word`, label: 'Word Quiz' },
     { to: `/tutors/${id}/quiz/sentence`, label: 'Sentence Quiz' },
-    { to: '/packages', label: 'Packages' },
   ]
 
   return (
@@ -51,22 +63,58 @@ export default function Layout() {
               </NavLink>
             ))}
           </nav>
-          <div className="flex items-center gap-3">
-            {isAdmin && (
-              <NavLink
-                to="/admin"
-                className="text-xs text-gray-400 bg-gray-100 hover:bg-gray-200 px-2 py-0.5 rounded-full transition"
-              >
-                Admin
-              </NavLink>
-            )}
-            <span className="text-xs text-gray-400 hidden sm:block">{user?.email}</span>
+
+          {/* User dropdown */}
+          <div className="relative" ref={menuRef}>
             <button
-              onClick={signOut}
-              className="text-sm text-gray-500 hover:text-filos-primary font-medium transition"
+              onClick={() => setMenuOpen((o) => !o)}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-filos-marble transition"
             >
-              Sign out
+              <div className="w-7 h-7 rounded-full bg-filos-primary/10 flex items-center justify-center flex-shrink-0">
+                <svg className="w-4 h-4 text-filos-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+              </div>
+              <span className="text-xs text-gray-500 hidden sm:block max-w-[140px] truncate">{user?.email}</span>
+              <svg className={`w-3.5 h-3.5 text-gray-400 transition-transform ${menuOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
             </button>
+
+            {menuOpen && (
+              <div className="absolute right-0 mt-1 w-48 bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-50">
+                <Link
+                  to="/packages"
+                  onClick={() => setMenuOpen(false)}
+                  className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-600 hover:bg-filos-marble hover:text-filos-primary transition"
+                >
+                  Packages
+                </Link>
+                <Link
+                  to={`/tutors/${id}/preferences`}
+                  onClick={() => setMenuOpen(false)}
+                  className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-600 hover:bg-filos-marble hover:text-filos-primary transition"
+                >
+                  Preferences
+                </Link>
+                {isAdmin && (
+                  <Link
+                    to="/admin"
+                    onClick={() => setMenuOpen(false)}
+                    className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-600 hover:bg-filos-marble hover:text-filos-primary transition"
+                  >
+                    Admin
+                  </Link>
+                )}
+                <div className="border-t border-gray-100 my-1" />
+                <button
+                  onClick={() => { setMenuOpen(false); signOut() }}
+                  className="w-full text-left flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-600 hover:bg-filos-marble hover:text-filos-primary transition"
+                >
+                  Sign out
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </header>

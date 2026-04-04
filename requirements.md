@@ -143,6 +143,14 @@ The application helps users learn a target language from English. It is a multi-
 - The vocabulary list can be filtered by any category via a dropdown (shown only when categories exist).
 - The `PATCH /api/tutors/{id}/vocabulary/{word_id}/categories` endpoint merges new categories into a word's existing set.
 
+## 15. Tutor Preferences
+
+- Each language tutor has a `preferences` JSONB column in `language_tutors` (default `{}`).
+- Preferences are fetched via `GET /api/tutors/{id}/preferences` and saved via `PATCH /api/tutors/{id}/preferences`.
+- The **Preferences page** (`/tutors/:tutorId/preferences`) is accessible from the main navigation.
+- **Allow small errors**: When enabled, a quiz answer with a Levenshtein distance of 1 from the correct answer is recorded as correct. The result still shows the correct answer with an "Almost correct!" note. No LLM call is made for this check.
+- Preferences are loaded at quiz session start and stored in the in-memory session object.
+
 ## 14. Admin
 
 - An admin-only page is available at `/admin`, protected exclusively by the backend. The `ADMIN_EMAIL` environment variable on the server determines which account has access.

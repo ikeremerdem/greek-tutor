@@ -175,9 +175,14 @@ export interface AdminUserStats {
   session_count: number
 }
 
+export interface TutorPreferences {
+  allow_small_errors: boolean
+}
+
 export interface LanguageTutor {
   id: string
   user_id: string
   language: string
   created_at: string
+  preferences: TutorPreferences
 }

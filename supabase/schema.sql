@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS language_tutors (
     user_id     UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
     language    TEXT NOT NULL CHECK (language IN ('Greek', 'German', 'Spanish', 'Italian', 'French')),
     created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    preferences JSONB NOT NULL DEFAULT '{"allow_small_errors": true}',
     UNIQUE (user_id, language)
 );
 
@@ -72,6 +73,10 @@ CREATE TABLE IF NOT EXISTS word_packages (
 --
 -- Migration: add word_packages table (run on existing databases)
 -- (copy the CREATE TABLE word_packages block above and run it)
+--
+-- Migration: add preferences column (run on existing databases)
+-- ALTER TABLE language_tutors ADD COLUMN IF NOT EXISTS preferences JSONB NOT NULL DEFAULT '{"allow_small_errors": true}';
+-- UPDATE language_tutors SET preferences = '{"allow_small_errors": true}' WHERE preferences = '{}';
 -- ============================================================
 
 -- ============================================================

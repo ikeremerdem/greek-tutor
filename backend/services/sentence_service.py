@@ -66,10 +66,10 @@ def _random_subject() -> str:
     return random.choice(SUBJECTS) + " and " + _random_singular_or_plural()
 
 
-def _chat(prompt: str, temperature: float = 0.7) -> str:
+def _chat(prompt: str, temperature: float = 0.7, max_tokens: int = 200) -> str:
     kwargs: dict = {
         "model": settings.llm_model,
-        "max_tokens": 200,
+        "max_tokens": max_tokens,
         "temperature": temperature,
         "messages": [{"role": "user", "content": prompt}],
     }
@@ -235,7 +235,7 @@ def generate_package_words(name: str, description: str, category: str) -> list[s
 {context}
 
 Requirements:
-- Generate up to 50 words or short phrases
+- Generate up to 50 words or short phrases that would fit most into the context of the package description 
 - Each entry should be a single English word or short phrase (e.g. "to run", "the house", "beautiful")
 - Use the base/infinitive form for verbs (e.g. "to eat" not "eating")
 - Use the most common/simple form for nouns and adjectives
@@ -245,7 +245,7 @@ Requirements:
 Respond with ONLY a JSON array of strings, no markdown, no explanation:
 ["word1", "word2", ...]"""
 
-    result = json.loads(_chat(prompt, temperature=0.8))
+    result = json.loads(_chat(prompt, temperature=0.8, max_tokens=800))
     if not isinstance(result, list):
         return []
     return [str(w).strip() for w in result if w][:50]

@@ -1,5 +1,8 @@
 # Release Notes
 
+### 2026-04-04 (2)
+- **Preferences** — Each tutor now has a Preferences page. The first preference is "Allow small errors": when on, a single wrong letter in a quiz answer is still counted as correct, and the right answer is shown so you can learn from it.
+
 ### 2026-04-04
 - **Generate words with AI** — When creating or editing a package, click "Generate words from description" to let AI suggest up to 50 relevant words based on your package name, description, and category.
 - **Word Packages** — Create and manage your own word packages. Mark them public to share with all users, or keep them private. Edit and delete your own packages from the new Packages page.

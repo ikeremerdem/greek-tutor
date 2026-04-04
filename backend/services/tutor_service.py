@@ -1,5 +1,5 @@
 from config import SUPPORTED_LANGUAGES
-from models.tutor import LanguageTutor, TutorCreate
+from models.tutor import LanguageTutor, TutorCreate, TutorPreferences
 from services.supabase_client import supabase
 
 
@@ -47,6 +47,35 @@ def create_tutor(user_id: str, data: TutorCreate) -> LanguageTutor:
         .execute()
     )
     return LanguageTutor(**response.data[0])
+
+
+def get_preferences(tutor_id: str, user_id: str) -> TutorPreferences:
+    response = (
+        supabase.table("language_tutors")
+        .select("preferences")
+        .eq("id", tutor_id)
+        .eq("user_id", user_id)
+        .single()
+        .execute()
+    )
+    if not response.data:
+        raise ValueError("Tutor not found")
+    raw = response.data.get("preferences") or {}
+    return TutorPreferences(**raw)
+
+
+def update_preferences(tutor_id: str, user_id: str, prefs: TutorPreferences) -> TutorPreferences:
+    response = (
+        supabase.table("language_tutors")
+        .update({"preferences": prefs.model_dump()})
+        .eq("id", tutor_id)
+        .eq("user_id", user_id)
+        .execute()
+    )
+    if not response.data:
+        raise ValueError("Tutor not found")
+    raw = response.data[0].get("preferences") or {}
+    return TutorPreferences(**raw)
 
 
 def delete_tutor(tutor_id: str, user_id: str) -> bool:

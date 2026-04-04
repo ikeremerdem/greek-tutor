@@ -15,6 +15,7 @@ import type {
   RecentSession,
   QuizType,
   LanguageTutor,
+  TutorPreferences,
   WordPackageSummary,
   WordPackageDetail,
   WordPackageCreate,
@@ -66,6 +67,12 @@ export const createTutor = (language: string) =>
 
 export const deleteTutor = (tutorId: string) =>
   request<void>(`/tutors/${tutorId}`, { method: 'DELETE' })
+
+export const getPreferences = (tutorId: string) =>
+  request<TutorPreferences>(`/tutors/${tutorId}/preferences`)
+
+export const updatePreferences = (tutorId: string, data: TutorPreferences) =>
+  request<TutorPreferences>(`/tutors/${tutorId}/preferences`, { method: 'PATCH', body: JSON.stringify(data) })
 
 // ── Vocabulary ───────────────────────────────────────────────
 export const lookupWord = (tutorId: string, english: string) =>

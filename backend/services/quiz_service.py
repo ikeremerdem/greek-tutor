@@ -45,9 +45,25 @@ class QuizSession:
     awaiting_answer: bool = False
     current_sentence: Optional[SentenceQuestion] = None
     used_sentences: list[str] = field(default_factory=list)
+    allow_small_errors: bool = False
 
 
 _active_sessions: dict[str, QuizSession] = {}
+
+
+def _levenshtein(a: str, b: str) -> int:
+    if len(a) < len(b):
+        return _levenshtein(b, a)
+    if len(b) == 0:
+        return len(a)
+    prev = list(range(len(b) + 1))
+    for ca in a:
+        curr = [prev[0] + 1]
+        for j, cb in enumerate(b):
+            cost = 0 if ca == cb else 1
+            curr.append(min(curr[j] + 1, prev[j + 1] + 1, prev[j] + cost))
+        prev = curr
+    return prev[-1]
 
 
 def start_session(tutor_id: str, user_id: str, language: str, req: QuizStartRequest) -> str:
@@ -70,6 +86,13 @@ def start_session(tutor_id: str, user_id: str, language: str, req: QuizStartRequ
         selected = _weighted_sample(eligible, num_q, req.focus)
         total_q = len(selected)
 
+    from services import tutor_service
+    try:
+        prefs = tutor_service.get_preferences(tutor_id, user_id)
+        allow_small_errors = prefs.allow_small_errors
+    except Exception:
+        allow_small_errors = False
+
     session_id = uuid.uuid4().hex[:8]
     session = QuizSession(
         id=session_id,
@@ -81,6 +104,7 @@ def start_session(tutor_id: str, user_id: str, language: str, req: QuizStartRequ
         questions=selected,
         total_questions=total_q,
         started_at=datetime.now(timezone.utc).isoformat(),
+        allow_small_errors=allow_small_errors,
     )
     _active_sessions[session_id] = session
     return session_id
@@ -154,7 +178,15 @@ def _submit_word_answer(session: QuizSession, answer: str) -> QuizAnswerResult:
         correct_answer = word.english
         prompt = word.target_language
 
-    is_correct = answer.strip().lower() == correct_answer.strip().lower()
+    norm_answer = answer.strip().lower()
+    norm_correct = correct_answer.strip().lower()
+    is_correct = norm_answer == norm_correct
+    explanation: str | None = None
+
+    if not is_correct and session.allow_small_errors and _levenshtein(norm_answer, norm_correct) == 1:
+        is_correct = True
+        explanation = f"You wrote '{answer}' — one letter off."
+
     vocabulary_service.record_answer(word.id, is_correct)
     if is_correct:
         session.correct_count += 1
@@ -169,6 +201,7 @@ def _submit_word_answer(session: QuizSession, answer: str) -> QuizAnswerResult:
     return QuizAnswerResult(
         correct=is_correct, correct_answer=correct_answer,
         your_answer=answer, notes=word.notes or None,
+        explanation=explanation,
     )
 
 

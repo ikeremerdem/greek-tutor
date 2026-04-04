@@ -1,4 +1,8 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+
+
+class TutorPreferences(BaseModel):
+    allow_small_errors: bool = True
 
 
 class LanguageTutor(BaseModel):
@@ -6,6 +10,7 @@ class LanguageTutor(BaseModel):
     user_id: str
     language: str
     created_at: str
+    preferences: TutorPreferences = Field(default_factory=TutorPreferences)
 
 
 class TutorCreate(BaseModel):
