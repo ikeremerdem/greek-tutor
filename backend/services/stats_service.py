@@ -7,9 +7,6 @@ from services.scoring import word_category, WordCategory, is_learned
 from services.supabase_client import supabase
 
 
-def reset_stats(tutor_id: str) -> None:
-    supabase.table("quiz_sessions").delete().eq("tutor_id", tutor_id).execute()
-
 
 def get_dashboard(tutor_id: str) -> DashboardStats:
     words = vocabulary_service.list_words(tutor_id)

@@ -116,9 +116,6 @@ export const getDashboard = (tutorId: string) =>
 export const getSessionsByType = (tutorId: string, quizType: QuizType) =>
   request<RecentSession[]>(`/tutors/${tutorId}/stats/sessions/${quizType}`)
 
-export const resetStats = (tutorId: string) =>
-  request<void>(`/tutors/${tutorId}/stats/reset`, { method: 'DELETE' })
-
 // ── Admin ─────────────────────────────────────────────────────
 export const checkAdmin = () =>
   request<{ ok: boolean }>('/admin/check')

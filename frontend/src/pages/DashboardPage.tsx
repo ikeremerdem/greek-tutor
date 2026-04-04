@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import type { DashboardStats, RecentSession } from '../types'
-import { getDashboard, resetStats } from '../api/client'
+import { getDashboard } from '../api/client'
 import StatsChart from '../components/StatsChart'
 import CategoryPill from '../components/CategoryPill'
 import { useTutor } from '../context/TutorContext'
@@ -16,22 +16,8 @@ const STAT_ICONS: Record<string, string> = {
 export default function DashboardPage() {
   const { tutorId } = useTutor()
   const [stats, setStats] = useState<DashboardStats | null>(null)
-  const [showConfirm, setShowConfirm] = useState(false)
-  const [resetting, setResetting] = useState(false)
-
   const load = () => getDashboard(tutorId).then(setStats)
   useEffect(() => { load() }, [tutorId])
-
-  const handleReset = async () => {
-    setResetting(true)
-    try {
-      await resetStats(tutorId)
-      await load()
-    } finally {
-      setResetting(false)
-      setShowConfirm(false)
-    }
-  }
 
   if (!stats) return <p className="text-center text-gray-400 py-12">Loading…</p>
 
@@ -39,45 +25,7 @@ export default function DashboardPage() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-bold text-filos-primary">Dashboard</h2>
-        {stats.total_sessions > 0 && (
-          <button
-            onClick={() => setShowConfirm(true)}
-            className="text-sm text-red-500 hover:text-red-700 font-medium transition"
-          >
-            Reset Statistics
-          </button>
-        )}
       </div>
-
-      {showConfirm && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl shadow-xl p-8 max-w-sm mx-4 text-center">
-            <div className="w-14 h-14 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4">
-              <svg className="w-7 h-7 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <h3 className="text-lg font-bold text-gray-800 mb-2">Reset Statistics?</h3>
-            <p className="text-gray-500 text-sm mb-6">
-              This will permanently delete all quiz session history. Your vocabulary will not be affected.
-            </p>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setShowConfirm(false)}
-                className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 text-gray-600 font-medium hover:bg-gray-50 transition"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleReset}
-                disabled={resetting}
-                className="flex-1 px-4 py-2.5 rounded-xl bg-red-500 text-white font-medium hover:bg-red-600 transition disabled:opacity-50"
-              >
-                {resetting ? 'Resetting…' : 'Delete All'}
-              </button>
-            </div>
-          </div>
-        </div>
       )}
 
       {stats.total_words === 0 && (
