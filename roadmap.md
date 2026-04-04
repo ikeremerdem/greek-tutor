@@ -15,5 +15,7 @@
 - Make sure that it runs correctly on the phone screens (Aret)
 - Add release notes section
 - Add messages to the user
+- Add a button to auto-generate words in multiple words editing and to add it as a package.
+
 
 
