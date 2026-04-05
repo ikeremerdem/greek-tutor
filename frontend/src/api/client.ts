@@ -162,10 +162,10 @@ export const translateSentence = (tutorId: string, text: string) =>
   })
 
 export const sendConversationMessage = (tutorId: string, conversationId: string, content: string) =>
-  request<{ content: string }>(`/tutors/${tutorId}/conversations/${conversationId}/messages`, {
-    method: 'POST',
-    body: JSON.stringify({ content }),
-  })
+  request<{ content: string; translation: string; grammar_ok: boolean; grammar_explanation: string; grammar_corrected: string }>(
+    `/tutors/${tutorId}/conversations/${conversationId}/messages`,
+    { method: 'POST', body: JSON.stringify({ content }) }
+  )
 
 // ── Admin: Personas ────────────────────────────────────────────
 export const adminGetPersonas = () =>
